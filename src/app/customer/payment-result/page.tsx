@@ -7,33 +7,67 @@ interface PaymentResultPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-const allowedStatuses = new Set(["success", "cancel"]);
+type PaymentResultState = "success" | "cancel" | "failed";
+
+function getSingleValue(
+  value: string | string[] | undefined,
+): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function parseBooleanFlag(
+  value: string | undefined,
+): boolean | undefined {
+  if (!value) return undefined;
+  const normalized = value.toLowerCase();
+  if (normalized === "true" || normalized === "1") return true;
+  if (normalized === "false" || normalized === "0") return false;
+  return undefined;
+}
+
+function resolvePaymentResult(params: Record<string, string | string[] | undefined>): PaymentResultState | null {
+  const status = getSingleValue(params.status)?.toLowerCase();
+  const code = getSingleValue(params.code);
+  const cancel = parseBooleanFlag(getSingleValue(params.cancel));
+
+  if (cancel === true) return "cancel";
+
+  const successStatuses = new Set(["success", "paid"]);
+  const cancelStatuses = new Set(["cancel", "cancelled", "canceled"]);
+  const failedStatuses = new Set(["failed", "fail", "error", "expired"]);
+
+  if (code === "00" || (status && successStatuses.has(status))) return "success";
+  if (status && cancelStatuses.has(status)) return "cancel";
+  if (status && failedStatuses.has(status)) return "failed";
+
+  if (cancel === false && code) return code === "00" ? "success" : "failed";
+
+  return null;
+}
 
 export default async function PaymentResultPage({ searchParams }: PaymentResultPageProps) {
   const params = await searchParams;
-  const rawStatus = params.status;
-  const status = Array.isArray(rawStatus) ? rawStatus[0] : rawStatus;
-
-  if (!status) {
+  const paymentResult = resolvePaymentResult(params);
+  if (!paymentResult) {
     notFound();
   }
 
-  const normalizedStatus = status.toLowerCase();
-  if (!allowedStatuses.has(normalizedStatus)) {
-    notFound();
-  }
-
-  const isSuccess = normalizedStatus === "success";
-  const result = isSuccess
+  const result = paymentResult === "success"
     ? {
         label: "Payment successful",
         variant: "default" as const,
         description: "Your payment has been completed successfully.",
       }
-    : {
+    : paymentResult === "cancel"
+      ? {
         label: "Payment cancelled",
         variant: "destructive" as const,
         description: "Your payment was cancelled. Please try again if needed.",
+      }
+      : {
+        label: "Payment failed",
+        variant: "destructive" as const,
+        description: "Your payment was not completed. Please try again.",
       };
 
   return (
