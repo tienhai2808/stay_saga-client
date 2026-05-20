@@ -9,6 +9,7 @@ export const adminNavItems: NavItem[] = [
   { href: "/admin/dashboard", label: "Overview" },
   { href: "/admin/properties", label: "Properties" },
   { href: "/admin/room-types", label: "Room Types" },
+  { href: "/admin/bookings", label: "Bookings" },
   { href: "/admin/profile", label: "Profile" },
 ];
 
@@ -16,6 +17,7 @@ export const customerNavItems: NavItem[] = [
   { href: "/customer/dashboard", label: "Overview" },
   { href: "/customer/properties", label: "Properties" },
   { href: "/customer/room-types", label: "Room Types" },
+  { href: "/customer/bookings", label: "Bookings" },
   { href: "/customer/profile", label: "Profile" },
 ];
 

@@ -34,6 +34,17 @@ export interface PropertyListQuery extends PaginationQuery {
   search?: string;
 }
 
+export interface BasicPropertyOption {
+  id: string;
+  name: string;
+}
+
+export interface BasicPropertyListData {
+  properties?: BasicPropertyOption[];
+  property?: BasicPropertyOption[];
+  items?: BasicPropertyOption[];
+}
+
 export interface PropertyRoomTypesData {
   roomTypes: BasicRoomTypeResponse[];
   meta: MetaResponse;

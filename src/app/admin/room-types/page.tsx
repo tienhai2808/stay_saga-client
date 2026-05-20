@@ -51,13 +51,18 @@ import { Paginator } from "@/components/common/paginator";
 import { DEFAULT_ORDER, DEFAULT_PAGE_SIZE, DEFAULT_SORT } from "@/lib/constants";
 import { getErrorMessage } from "@/lib/http/client";
 import { formatCurrency } from "@/lib/utils";
+import { propertyService } from "@/services/property.service";
 import { roomTypeService } from "@/services/room-type.service";
 import type { MetaResponse } from "@/types/api";
-import type { RoomTypeRequest, RoomTypeResponse } from "@/types/property";
+import type {
+  BasicPropertyOption,
+  RoomTypeRequest,
+  RoomTypeResponse,
+} from "@/types/property";
 
 const roomTypeSchema = z.object({
   name: z.string().min(1, "Room type name is required"),
-  propertyId: z.string().regex(/^\d+$/, "Property ID must be numeric"),
+  propertyId: z.string().min(1, "Property is required"),
   price: z
     .string()
     .refine((value) => !Number.isNaN(Number(value)), "Invalid room price")
@@ -85,12 +90,13 @@ const emptyMeta: MetaResponse = {
 
 export default function AdminRoomTypesPage() {
   const [items, setItems] = useState<RoomTypeResponse[]>([]);
+  const [propertyOptions, setPropertyOptions] = useState<BasicPropertyOption[]>([]);
   const [meta, setMeta] = useState<MetaResponse>(emptyMeta);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
-  const [propertyFilterInput, setPropertyFilterInput] = useState("");
   const [search, setSearch] = useState("");
+  const [propertyFilterInput, setPropertyFilterInput] = useState("");
   const [propertyId, setPropertyId] = useState("");
   const [sort, setSort] = useState(DEFAULT_SORT);
   const [order, setOrder] = useState<"asc" | "desc">(DEFAULT_ORDER);
@@ -109,6 +115,21 @@ export default function AdminRoomTypesPage() {
       totalRoom: "1",
     },
   });
+
+  useEffect(() => {
+    const fetchPropertyOptions = async () => {
+      try {
+        const response = await propertyService.listBasic();
+        const data = response.data.data;
+        const normalized = data?.properties ?? data?.property ?? data?.items ?? [];
+        setPropertyOptions(normalized);
+      } catch (fetchError) {
+        toast.error(getErrorMessage(fetchError, "Unable to load property options"));
+      }
+    };
+
+    void fetchPropertyOptions();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -249,7 +270,7 @@ export default function AdminRoomTypesPage() {
 
       <Card>
         <CardContent className="space-y-4 pt-6">
-          <div className="grid gap-3 md:grid-cols-[1fr_180px_170px_170px_auto]">
+          <div className="grid gap-3 md:grid-cols-[1fr_220px_170px_170px_auto]">
             <Input
               placeholder="Search by room type name..."
               value={searchInput}
@@ -261,16 +282,17 @@ export default function AdminRoomTypesPage() {
               }}
             />
 
-            <Input
-              placeholder="Filter Property ID"
+            <Select
               value={propertyFilterInput}
               onChange={(event) => setPropertyFilterInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  handleSearch();
-                }
-              }}
-            />
+            >
+              <option value="">All properties</option>
+              {propertyOptions.map((property) => (
+                <option key={property.id} value={property.id}>
+                  {property.name}
+                </option>
+              ))}
+            </Select>
 
             <Select
               value={sort}
@@ -371,7 +393,6 @@ export default function AdminRoomTypesPage() {
                         <TableCell>{item.name}</TableCell>
                         <TableCell>
                           <p>{item.property.name}</p>
-                          <p className="text-xs text-muted-foreground">ID: {item.property.id}</p>
                         </TableCell>
                         <TableCell>{formatCurrency(item.price)}</TableCell>
                         <TableCell>{item.maxGuest}</TableCell>
@@ -447,9 +468,16 @@ export default function AdminRoomTypesPage() {
                 name="propertyId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Property ID</FormLabel>
+                    <FormLabel>Property</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: 879687916060672" {...field} />
+                      <Select {...field}>
+                        <option value="">Select a property</option>
+                        {propertyOptions.map((property) => (
+                          <option key={property.id} value={property.id}>
+                            {property.name}
+                          </option>
+                        ))}
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

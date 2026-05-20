@@ -2,6 +2,7 @@ import { apiClient } from "@/lib/http/client";
 import { toQueryString } from "@/lib/utils";
 import type { ApiEnvelope } from "@/types/api";
 import type {
+  BasicPropertyListData,
   PropertyListData,
   PropertyListQuery,
   PropertyRequest,
@@ -33,6 +34,10 @@ export const propertyService = {
     });
 
     return apiClient.get<ApiEnvelope<PropertyListData>>(`/properties?${params}`);
+  },
+
+  listBasic() {
+    return apiClient.get<ApiEnvelope<BasicPropertyListData>>("/properties?view=basic");
   },
 
   listRoomTypesByProperty(id: string, query: RoomTypeByPropertyQuery) {
