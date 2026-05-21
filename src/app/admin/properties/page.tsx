@@ -282,7 +282,6 @@ export default function AdminPropertiesPage() {
               }}
             >
               <option value="name">Sort: Name</option>
-              <option value="id">Sort: ID</option>
               <option value="address">Sort: Address</option>
               <option value="ward">Sort: Ward</option>
               <option value="city">Sort: City</option>

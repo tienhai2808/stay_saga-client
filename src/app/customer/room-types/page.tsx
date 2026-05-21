@@ -165,7 +165,7 @@ export default function CustomerRoomTypesPage() {
       const response = await bookingService.create(payload);
       const bookingId = response.data.data?.id;
       if (!bookingId) {
-        throw new Error("Booking ID was not returned");
+        throw new Error("Booking reference was not returned");
       }
 
       toast.success(response.data.message);
@@ -200,7 +200,7 @@ export default function CustomerRoomTypesPage() {
             />
 
             <Input
-              placeholder="Filter Property ID"
+              placeholder="Filter by property"
               value={propertyFilterInput}
               onChange={(event) => setPropertyFilterInput(event.target.value)}
               onKeyDown={(event) => {
@@ -218,7 +218,6 @@ export default function CustomerRoomTypesPage() {
               }}
             >
               <option value="name">Sort: Name</option>
-              <option value="id">Sort: ID</option>
               <option value="price">Sort: Price</option>
             </Select>
 

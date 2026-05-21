@@ -302,7 +302,6 @@ export default function AdminRoomTypesPage() {
               }}
             >
               <option value="name">Sort: Name</option>
-              <option value="id">Sort: ID</option>
               <option value="price">Sort: Price</option>
             </Select>
 

@@ -2,6 +2,7 @@ import { apiClient } from "@/lib/http/client";
 import { toQueryString } from "@/lib/utils";
 import type { ApiEnvelope } from "@/types/api";
 import type {
+  BookingDetailData,
   BookingListData,
   BookingListQuery,
   CreateBookingData,
@@ -23,5 +24,9 @@ export const bookingService = {
     });
 
     return apiClient.get<ApiEnvelope<BookingListData>>(`/bookings?${params}`);
+  },
+
+  getById(id: string) {
+    return apiClient.get<ApiEnvelope<BookingDetailData>>(`/bookings/${id}`);
   },
 };
