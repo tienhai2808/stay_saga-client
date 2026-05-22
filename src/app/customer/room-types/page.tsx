@@ -170,7 +170,7 @@ export default function CustomerRoomTypesPage() {
 
       toast.success(response.data.message);
       setOpenBooking(false);
-      router.push(`/customer/payment?bookingId=${bookingId}`);
+      router.push("/customer/bookings");
     } catch (submitError) {
       toast.error(getErrorMessage(submitError));
     } finally {

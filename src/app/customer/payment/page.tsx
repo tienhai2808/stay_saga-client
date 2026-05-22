@@ -25,8 +25,8 @@ export default function CustomerPaymentPage() {
   useEffect(() => {
     const bookingId = searchParams.get("bookingId");
     if (!bookingId || !/^\d+$/.test(bookingId)) {
-      toast.error("Missing booking reference. Please create a booking first.");
-      router.replace("/customer/room-types");
+      toast.error("Missing booking reference. Please choose a booking to continue payment.");
+      router.replace("/customer/bookings");
       return;
     }
 
@@ -49,7 +49,7 @@ export default function CustomerPaymentPage() {
         openCheckout(paymentData.checkoutUrl);
       } catch (error) {
         toast.error(getErrorMessage(error));
-        router.replace("/customer/room-types");
+        router.replace("/customer/bookings");
       } finally {
         setLoading(false);
       }
