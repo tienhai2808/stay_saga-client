@@ -7,6 +7,11 @@ export default function AdminBookingsPage() {
     <BookingListPageContent
       title="Booking Management"
       description="Review all bookings across users with filter, sort, and pagination."
+      statusUpdate={{
+        nextStatus: "completed",
+        actionLabel: "Mark completed",
+        allowedCurrentStatuses: ["confirmed"],
+      }}
     />
   );
 }

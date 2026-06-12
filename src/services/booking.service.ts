@@ -7,6 +7,7 @@ import type {
   BookingListQuery,
   CreateBookingData,
   CreateBookingRequest,
+  UpdateBookingStatusRequest,
 } from "@/types/booking";
 
 export const bookingService = {
@@ -28,5 +29,9 @@ export const bookingService = {
 
   getById(id: string) {
     return apiClient.get<ApiEnvelope<BookingDetailData>>(`/bookings/${id}`);
+  },
+
+  updateStatus(id: string, payload: UpdateBookingStatusRequest) {
+    return apiClient.put<ApiEnvelope<null>>(`/bookings/${id}`, payload);
   },
 };

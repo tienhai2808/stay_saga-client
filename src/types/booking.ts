@@ -13,7 +13,12 @@ export interface CreateBookingData {
 }
 
 export type BookingStatus = "pending" | "confirmed" | "cancelled" | "completed";
+export type UpdateBookingStatus = Extract<BookingStatus, "cancelled" | "completed">;
 export type BookingSortField = "id" | "createdAt" | "updatedAt" | "status";
+
+export interface UpdateBookingStatusRequest {
+  status: UpdateBookingStatus;
+}
 
 export interface BookingListItem {
   id: string;

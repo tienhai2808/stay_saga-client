@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { CreditCard } from "lucide-react";
+import { toast } from "sonner";
 import { EmptyState } from "@/components/common/empty-state";
 import { PageHeader } from "@/components/common/page-header";
 import { Paginator } from "@/components/common/paginator";
@@ -36,6 +37,7 @@ import type {
   BookingListItem,
   BookingSortField,
   BookingStatus,
+  UpdateBookingStatus,
 } from "@/types/booking";
 
 interface BookingListPageContentProps {
@@ -46,6 +48,11 @@ interface BookingListPageContentProps {
   payNow?: {
     onClick: (bookingId: string) => void;
     label?: string;
+  };
+  statusUpdate?: {
+    nextStatus: UpdateBookingStatus;
+    actionLabel: string;
+    allowedCurrentStatuses: BookingStatus[];
   };
 }
 
@@ -121,6 +128,7 @@ export function BookingListPageContent({
   action,
   showRefreshButton = false,
   payNow,
+  statusUpdate,
 }: BookingListPageContentProps) {
   const [items, setItems] = useState<BookingListItem[]>([]);
   const [meta, setMeta] = useState<MetaResponse>(emptyMeta);
@@ -136,6 +144,7 @@ export function BookingListPageContent({
   const [selectedBooking, setSelectedBooking] = useState<BookingDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [updateLoading, setUpdateLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -190,10 +199,52 @@ export function BookingListPageContent({
     setSelectedBooking(null);
     setDetailError(null);
     setDetailLoading(false);
+    setUpdateLoading(false);
+  };
+
+  const handleUpdateBookingStatus = async () => {
+    if (!selectedBookingId || !selectedBooking || !statusUpdate) {
+      return;
+    }
+
+    try {
+      setUpdateLoading(true);
+
+      const response = await bookingService.updateStatus(selectedBookingId, {
+        status: statusUpdate.nextStatus,
+      });
+
+      toast.success(response.data.message);
+
+      setSelectedBooking((current) =>
+        current
+          ? {
+              ...current,
+              status: statusUpdate.nextStatus,
+              updatedAt: new Date().toISOString(),
+            }
+          : current,
+      );
+      setItems((current) =>
+        current.map((item) =>
+          item.id === selectedBookingId ? { ...item, status: statusUpdate.nextStatus } : item,
+        ),
+      );
+      setRefreshVersion((current) => current + 1);
+    } catch (updateError) {
+      toast.error(getErrorMessage(updateError, "Unable to update booking"));
+    } finally {
+      setUpdateLoading(false);
+    }
   };
 
   const payAllowed = canPayBooking(selectedBooking);
   const payLabel = payAllowed ? payNow?.label ?? "Pay now" : "Payment unavailable";
+  const updateAllowed = Boolean(
+    statusUpdate &&
+      selectedBooking &&
+      statusUpdate.allowedCurrentStatuses.includes(selectedBooking.status),
+  );
 
   return (
     <div className="space-y-6">
@@ -420,6 +471,18 @@ export function BookingListPageContent({
               Close
             </Button>
 
+            {statusUpdate && updateAllowed ? (
+              <Button
+                variant={statusUpdate.nextStatus === "cancelled" ? "destructive" : "default"}
+                onClick={() => {
+                  void handleUpdateBookingStatus();
+                }}
+                disabled={!selectedBooking || detailLoading || updateLoading}
+              >
+                {statusUpdate.actionLabel}
+              </Button>
+            ) : null}
+
             {payNow ? (
               <Button
                 onClick={() => {
@@ -429,7 +492,7 @@ export function BookingListPageContent({
 
                   payNow.onClick(selectedBooking.id);
                 }}
-                disabled={!selectedBooking || !payAllowed}
+                disabled={!selectedBooking || !payAllowed || updateLoading}
               >
                 <CreditCard className="h-4 w-4" />
                 {payLabel}

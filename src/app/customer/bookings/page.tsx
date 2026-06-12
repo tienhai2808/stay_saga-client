@@ -11,6 +11,11 @@ export default function CustomerBookingsPage() {
     <BookingListPageContent
       title="My Bookings"
       description="Review your bookings and continue payment for pending items."
+      statusUpdate={{
+        nextStatus: "cancelled",
+        actionLabel: "Cancel booking",
+        allowedCurrentStatuses: ["pending"],
+      }}
       action={
         <Button variant="outline" onClick={() => router.push("/customer/room-types")}>
           Create Booking
